@@ -246,6 +246,40 @@ server.tool(
   }
 );
 
+// Raw Node Info Tool — returns the unfiltered JSON_REST_V1 document.
+// Bypasses the legacy filterFigmaNode (which strips VECTOR / imageRef / componentId / visible / etc.).
+// The transform parameter is auto-injected by tool-proxy and applied post-fetch only if provided.
+server.tool(
+  "get_node_info_raw",
+  "Get the raw, unfiltered JSON_REST_V1 document for a specific node in Figma (includes VECTOR, imageRef, componentId, visible, and other fields that the standard get_node_info strips). Without a transform parameter the full document is returned untouched.",
+  {
+    nodeId: z.string().describe("The ID of the node to get raw information about"),
+  },
+  async ({ nodeId }: any) => {
+    try {
+      const result = await sendCommandToFigma("get_node_info_raw", { nodeId });
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(result)
+          }
+        ]
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error getting raw node info: ${error instanceof Error ? error.message : String(error)
+              }`,
+          },
+        ],
+      };
+    }
+  }
+);
+
 function rgbaToHex(color: any): string {
   // skip if color is already hex
   if (color.startsWith('#')) {
@@ -2685,6 +2719,7 @@ type FigmaCommand =
   | "set_current_page"
   | "get_selection"
   | "get_node_info"
+  | "get_node_info_raw"
   | "get_nodes_info"
   | "read_my_design"
   | "create_rectangle"
@@ -2728,6 +2763,7 @@ type CommandParams = {
   set_current_page: { pageId: string };
   get_selection: Record<string, never>;
   get_node_info: { nodeId: string };
+  get_node_info_raw: { nodeId: string };
   get_nodes_info: { nodeIds: string[] };
   create_rectangle: {
     x: number;
@@ -2992,7 +3028,7 @@ function connectToFigma(port: number = 3055) {
       if (
         myResponse.id &&
         pendingRequests.has(myResponse.id) &&
-        myResponse.result
+        (myResponse.result !== undefined || myResponse.error !== undefined)
       ) {
         const request = pendingRequests.get(myResponse.id)!;
         clearTimeout(request.timeout);
@@ -3255,6 +3291,12 @@ async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
   logger.info('FigmaMCP server running on stdio');
+
+  // Exit when the MCP client goes away: stdin EOF is the only death signal a
+  // stdio server gets, and the WS reconnect loop otherwise keeps orphaned
+  // processes alive forever.
+  process.stdin.on('end', () => process.exit(0));
+  process.stdin.on('close', () => process.exit(0));
 }
 
 // Run the server

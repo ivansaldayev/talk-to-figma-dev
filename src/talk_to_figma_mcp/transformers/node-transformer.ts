@@ -225,6 +225,9 @@ function buildFilteredNode(node: any, options: TransformOptions): any {
   // Copy other properties
   const propsToCheck = [
     'cornerRadius',
+    'rectangleCornerRadii',
+    'strokeWeight',
+    'strokeAlign',
     'absoluteBoundingBox',
     'characters',
     'style',
@@ -244,6 +247,11 @@ function buildFilteredNode(node: any, options: TransformOptions): any {
     'locked',
     'opacity',
     'blendMode',
+    'styles',
+    'effectStyleId',
+    'componentId',
+    'componentProperties',
+    'variantProperties',
     'constraints',
     'rotation',
     'x',
@@ -511,6 +519,46 @@ function filterFigmaNodeOriginal(node: any): any {
 
   if (node.cornerRadius !== undefined) {
     filtered.cornerRadius = node.cornerRadius;
+  }
+
+  if (node.rectangleCornerRadii !== undefined) {
+    filtered.rectangleCornerRadii = node.rectangleCornerRadii;
+  }
+
+  if (node.strokeWeight !== undefined) {
+    filtered.strokeWeight = node.strokeWeight;
+  }
+
+  if (node.strokeAlign !== undefined) {
+    filtered.strokeAlign = node.strokeAlign;
+  }
+
+  if (node.opacity !== undefined) {
+    filtered.opacity = node.opacity;
+  }
+
+  if (node.blendMode !== undefined) {
+    filtered.blendMode = node.blendMode;
+  }
+
+  if (node.styles !== undefined) {
+    filtered.styles = node.styles;
+  }
+
+  if (node.effectStyleId !== undefined) {
+    filtered.effectStyleId = node.effectStyleId;
+  }
+
+  if (node.componentId !== undefined) {
+    filtered.componentId = node.componentId;
+  }
+
+  if (node.componentProperties !== undefined) {
+    filtered.componentProperties = node.componentProperties;
+  }
+
+  if (node.variantProperties !== undefined) {
+    filtered.variantProperties = node.variantProperties;
   }
 
   if (node.absoluteBoundingBox) {

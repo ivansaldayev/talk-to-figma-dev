@@ -198,6 +198,18 @@ const server = Bun.serve({
           
           if (broadcastCount === 0) {
             console.log(`⚠️  No other clients in channel "${channelName}" to receive message!`);
+            // Reject the sender's pending request right away instead of letting it hit the 30s timeout
+            const requestId = (data.message && data.message.id) || data.id;
+            if (requestId) {
+              ws.send(JSON.stringify({
+                type: "system",
+                message: {
+                  id: requestId,
+                  error: `No Figma plugin connected to channel "${channelName}"`
+                },
+                channel: channelName
+              }));
+            }
           } else {
             console.log(`✓ Broadcast to ${broadcastCount} peer(s) in channel "${channelName}"`);
           }

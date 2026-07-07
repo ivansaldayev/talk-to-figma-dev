@@ -15,6 +15,7 @@ export const READ_TOOLS = [
   'get_selection',
   'read_my_design',
   'get_node_info',
+  'get_node_info_raw',
   'get_nodes_info',
   'get_styles',
   'get_local_components',
@@ -203,6 +204,17 @@ export function createToolProxy(originalTool: Function): Function {
       };
 
       return originalTool(name, extendedDescription, extendedSchema, wrappedHandler);
+    }
+
+    // Invalidate the document cache when the current page changes,
+    // otherwise get_document_info keeps serving the previous page
+    if (name === 'set_current_page') {
+      const wrappedPageHandler = async (params: any) => {
+        const result = await handler(params);
+        pageCache.documentInfo = null;
+        return result;
+      };
+      return originalTool(name, description, schema, wrappedPageHandler);
     }
 
     // Intercept join_channel for preloading

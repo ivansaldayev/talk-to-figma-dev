@@ -403,6 +403,10 @@ function filterFigmaNode(node) {
     filtered.cornerRadius = node.cornerRadius;
   }
 
+  if (node.rectangleCornerRadii !== undefined) {
+    filtered.rectangleCornerRadii = node.rectangleCornerRadii;
+  }
+
   if (node.absoluteBoundingBox) {
     filtered.absoluteBoundingBox = node.absoluteBoundingBox;
   }
@@ -482,6 +486,31 @@ function supplementNodeProperties(filteredNode, figmaNode) {
 
   if (figmaNode.strokeAlign !== undefined) {
     filteredNode.strokeAlign = figmaNode.strokeAlign;
+  }
+
+  if (typeof figmaNode.cornerRadius === "symbol" && figmaNode.topLeftRadius !== undefined) {
+    filteredNode.rectangleCornerRadii = [
+      figmaNode.topLeftRadius,
+      figmaNode.topRightRadius,
+      figmaNode.bottomRightRadius,
+      figmaNode.bottomLeftRadius,
+    ];
+  }
+
+  try {
+    if (figmaNode.type === "INSTANCE" && figmaNode.componentProperties && Object.keys(figmaNode.componentProperties).length > 0) {
+      filteredNode.componentProperties = figmaNode.componentProperties;
+    }
+  } catch (e) {
+    // componentProperties throws for instances of non-variant components
+  }
+
+  try {
+    if (figmaNode.variantProperties) {
+      filteredNode.variantProperties = figmaNode.variantProperties;
+    }
+  } catch (e) {
+    // variantProperties is unavailable on some node types
   }
 
   var styles = {};
@@ -1544,7 +1573,10 @@ async function setCornerRadius(params) {
   return {
     id: node.id,
     name: node.name,
-    cornerRadius: "cornerRadius" in node ? node.cornerRadius : undefined,
+    cornerRadius:
+      "cornerRadius" in node && typeof node.cornerRadius !== "symbol"
+        ? node.cornerRadius
+        : undefined,
     topLeftRadius: "topLeftRadius" in node ? node.topLeftRadius : undefined,
     topRightRadius: "topRightRadius" in node ? node.topRightRadius : undefined,
     bottomRightRadius:
