@@ -282,6 +282,8 @@ async function getDocumentInfo() {
       id: node.id,
       name: node.name,
       type: node.type,
+      // LOCAL: tells clients which top-level nodes have content without loading it
+      childCount: "children" in node ? node.children.length : undefined,
     })),
     currentPage: {
       id: page.id,
@@ -3201,7 +3203,12 @@ async function getInstanceOverrides(instanceNode = null) {
       message: `Got component information from "${sourceInstance.name}" for overrides.length: ${overrides.length}`,
       sourceInstanceId: sourceInstance.id,
       mainComponentId: mainComponent.id,
-      overridesCount: overrides.length
+      overridesCount: overrides.length,
+      // LOCAL: return the overrides themselves, not just their count
+      overrides: overrides.map((override) => ({
+        id: override.id,
+        overriddenFields: override.overriddenFields,
+      })),
     };
 
     console.log("Data to return to MCP server:", returnData);

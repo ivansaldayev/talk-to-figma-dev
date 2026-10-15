@@ -82,32 +82,37 @@ function transformNodeRecursive(node: any, context: TransformContext): any {
     return null;
   }
 
-  // 2. Check maxDepth - create truncated node if at limit
-  if (options.maxDepth !== undefined && currentDepth >= options.maxDepth) {
-    return createTruncatedNode(node, currentPath, options.includeMetadata);
-  }
-
-  // 3. Build filtered node with properties
+  // 2. Build filtered node with properties
   const filtered = buildFilteredNode(node, options);
 
-  // 4. Add metadata if requested
+  // 3. Add metadata if requested
   if (options.includeMetadata) {
     filtered._path = currentPath.join(' / ');
   }
 
-  // 5. Process children
-  if (node.children && Array.isArray(node.children)) {
-    const childContext: TransformContext = {
-      ...context,
-      currentDepth: currentDepth + 1,
-      path: currentPath,
-    };
-
-    const processedChildren = processChildren(node.children, childContext, filtered);
-
-    if (processedChildren.length > 0) {
-      filtered.children = processedChildren;
+  // 4. Children not in the response are replaced by a count: at maxDepth, or
+  // when the source only counts them (get_document_info's page children)
+  const hasChildren = Array.isArray(node.children);
+  const childrenCount = hasChildren ? node.children.length : node.childCount;
+  if (!hasChildren || (options.maxDepth !== undefined && currentDepth >= options.maxDepth)) {
+    if (childrenCount > 0) {
+      filtered._truncated = true;
+      filtered._childrenCount = childrenCount;
     }
+    return filtered;
+  }
+
+  // 5. Process children
+  const childContext: TransformContext = {
+    ...context,
+    currentDepth: currentDepth + 1,
+    path: currentPath,
+  };
+
+  const processedChildren = processChildren(node.children, childContext, filtered);
+
+  if (processedChildren.length > 0) {
+    filtered.children = processedChildren;
   }
 
   return filtered;
@@ -150,28 +155,6 @@ function createNodeStub(node: any, path: string[], includeMetadata?: boolean): a
   }
 
   return stub;
-}
-
-/**
- * Create a truncated node (at maxDepth limit)
- */
-function createTruncatedNode(node: any, path: string[], includeMetadata?: boolean): any {
-  const truncated: any = {
-    id: node.id,
-    name: node.name,
-    type: node.type,
-    _truncated: true,
-  };
-
-  if (node.children && Array.isArray(node.children)) {
-    truncated._childrenCount = node.children.length;
-  }
-
-  if (includeMetadata) {
-    truncated._path = path.join(' / ');
-  }
-
-  return truncated;
 }
 
 /**

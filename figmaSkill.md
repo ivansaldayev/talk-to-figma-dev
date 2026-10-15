@@ -69,7 +69,7 @@
 
 | Параметр | Назначение |
 |----------|-----------|
-| `maxDepth` | Глубина дерева (0 = только сама нода) |
+| `maxDepth` | Глубина дерева (0 = только сама нода: со свойствами, без детей, с `_childrenCount`) |
 | `maxChildren` | Лимит детей на уровень |
 | `typeFilter.exclude` | Исключить типы: `["VECTOR", "LINE", "ELLIPSE", "BOOLEAN_OPERATION"]` |
 | `typeFilter.include` | Только эти типы: `["FRAME", "TEXT", "COMPONENT", "INSTANCE"]` |
@@ -149,15 +149,34 @@
 
 ## Инструменты с поддержкой transform
 
+Transform есть только у инструментов, которые возвращают дерево нод:
+
 - `get_document_info`
-- `get_selection`
 - `read_my_design`
 - `get_node_info`
+- `get_node_info_raw`
 - `get_nodes_info`
-- `get_styles`
-- `get_local_components`
-- `scan_text_nodes`
-- `scan_nodes_by_types`
-- `get_annotations`
-- `get_instance_overrides`
-- `get_reactions`
+
+У списочных инструментов (`get_selection`, `get_styles`, `get_local_components`, `scan_text_nodes`, `scan_nodes_by_types`, `get_annotations`, `get_reactions`) ответ не является деревом нод, поэтому их `transform` поддерживает только `pagination` — постраничный вывод верхнеуровневых списков:
+
+```json
+{"transform": {"pagination": {"page": 0, "pageSize": 3}}}
+```
+
+```json
+{"count": 1304, "components": [ /* 3 items */ ], "_pagination": {"page": 0, "pageSize": 3, "totals": {"components": 1304}, "totalPages": 435}}
+```
+
+У `get_styles` листаются все четыре списка сразу (`colors`, `texts`, `effects`, `grids`), `totalPages` считается по самому длинному. У `get_instance_overrides` параметра `transform` нет.
+
+В `get_document_info` дети страницы приходят с `childCount`, а с `transform` — с `_truncated: true` и `_childrenCount`: так видно, в какой секции есть содержимое, не загружая её.
+
+## savePath
+
+Есть у всех read-инструментов. Полный JSON-ответ записывается в файл, а в разговор приходит только сводка:
+
+```json
+{"savedTo": "/abs/path/components.json", "chars": 148213, "shape": {"count": 1304, "components": "[1304 items]"}}
+```
+
+Используй для больших ответов (`get_local_components`, `scan_text_nodes`), когда нужен весь список, а не одна страница, а потом читай файл по частям (`jq`, `Read` с `offset`). Если записать файл не удалось, придёт ошибка `Failed to save response to …`.

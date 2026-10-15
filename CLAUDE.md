@@ -33,6 +33,8 @@ Resolve any merge conflicts manually.
 - `list_channels` tool — get active channels list
 - `export_node_as_image` — added `savePath` param to save to disk
 - Tool proxy — auto-adds `transform` param to read tools
+- `get_instance_overrides` — returns the plugin result as JSON (IDs, count, `overrides`) instead of only its message
+- `get_reactions` — no `MUST call create_connections`: the connector hint (and `followUp`) is added only when `nodesWithReactions > 0`
 - `get_node_info` / `get_nodes_info` — use `transformFigmaNode` instead of local `filterFigmaNode` (1 import + 2 call sites changed; `filterFigmaNode` itself untouched)
 
 ### Figma Plugin (`src/cursor_mcp_plugin/code.js`)
@@ -43,6 +45,8 @@ Resolve any merge conflicts manually.
   - `getNodeInfoRaw` — returns the unfiltered `JSON_REST_V1` `response.document` from Plugin API. Includes fields the standard pipeline strips: `layoutMode`, padding\*, `itemSpacing`, `primaryAxisAlignItems`/`counterAxisAlignItems`, sizing modes, `visible`, `componentId` (on INSTANCE), `imageRef` in fills, VECTOR nodes
 - `getNodeInfo`, `getNodesInfo`, `readMyDesign` — each calls `supplementNodeProperties(result, node)` after `filterFigmaNode`
 - New `case "get_node_info_raw"` added to the `handleCommand` switch (4 added lines, no original cases modified)
+- `getDocumentInfo` — page children carry `childCount` (inline `// LOCAL:` line)
+- `getInstanceOverrides` — result includes `overrides` (`{id, overriddenFields}`; inline `// LOCAL:` lines)
 - **Requires Figma Desktop** to pick up local changes (published plugin ignores local files)
 
 ### MCP Config and Build
@@ -60,12 +64,14 @@ Resolve any merge conflicts manually.
 - Preloads `get_document_info` after `join_channel` for faster subsequent reads
 - Use `noCache: true` to force fresh data
 
-**Transform options for read tools:**
-- `maxDepth`, `maxChildren` — limit tree traversal
+**Transform options** — only on read tools that return node trees (`NODE_TREE_TOOLS` in `utils/tool-proxy.ts`: `get_document_info`, `get_node_info`, `get_node_info_raw`, `get_nodes_info`, `read_my_design`). Wrapper/list responses would be wiped out by the node transformer, so list tools (`LIST_TOOLS`: `get_selection`, `get_styles`, `get_local_components`, `scan_text_nodes`, `scan_nodes_by_types`, `get_annotations`, `get_reactions`) get a `transform` with `pagination` only, applied to their top-level arrays (`_pagination.totals`). A node with `childCount` but no `children` array (page children in `get_document_info`) gets `_truncated` + `_childrenCount`.
+- `maxDepth`, `maxChildren` — limit tree traversal; nodes at `maxDepth` keep their properties and get `_truncated` + `_childrenCount` instead of children (`maxDepth: 0` = the node itself)
 - `typeFilter`, `propertyFilter` — filter nodes/properties
 - `simplifyStyles` — simplify fills/strokes/effects
 - `pagination` — paginate children
-- `savePath` — save response to JSON
+
+**All read tools:**
+- `savePath` — write the JSON payload (last text item that parses as JSON) to a file and return only `{savedTo, chars, shape}`; write failures return `isError`; non-JSON (error) responses are passed through unsaved
 - `noCache` — skip cache
 
 ## Known Limitations

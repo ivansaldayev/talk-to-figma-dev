@@ -12,16 +12,19 @@ The list below covers everything added on top of upstream. Items are grouped by 
 
 ### MCP server (`src/talk_to_figma_mcp/server.ts`) — works out of the box
 
-- **Transform system for read tools.** A tool-proxy automatically attaches a `transform` parameter to read operations, with options:
-  - `maxDepth`, `maxChildren` — limit tree traversal
+- **Transform system for read tools.** A tool-proxy automatically attaches a `transform` parameter to the read tools that return node trees (`get_document_info`, `get_node_info`, `get_node_info_raw`, `get_nodes_info`, `read_my_design`), with options:
+  - `maxDepth`, `maxChildren` — limit tree traversal (`maxDepth: 0` returns the node with its properties and a `_childrenCount` instead of children)
   - `typeFilter`, `propertyFilter` — keep only the node types / properties you need
   - `simplifyStyles` — flatten fills / strokes / effects
   - `pagination` — paginate children
-  - `savePath` — dump the response to a JSON file on disk
+  - List tools (`get_selection`, `get_styles`, `get_local_components`, `scan_text_nodes`, `scan_nodes_by_types`, `get_annotations`, `get_reactions`) get `transform.pagination` only: it pages through their top-level lists and reports `_pagination.totals`
+  - `savePath` (all read tools) — write the JSON response to a file and return only a summary (path, size, top-level shape), so large responses stay out of the agent's context
   - `noCache` — force a fresh read, bypassing the cache
 - **Response caching.** After `join_channel` the server preloads `get_document_info` so subsequent reads are faster. Use `noCache: true` to force a refresh.
 - **`list_channels` tool** — list active WebSocket channels and their client counts.
 - **`export_node_as_image` — `savePath` parameter** added, so the exported image can be written directly to disk instead of only being returned inline.
+- **`get_instance_overrides` returns data** — source instance and main component IDs, override count and (with the local plugin) the overrides themselves, instead of a status message only.
+- **`get_reactions` no longer demands `create_connections`.** The connector hint is added only when reactions were found, as a suggestion rather than a required next step.
 - **Unified node transformation.** `get_node_info` / `get_nodes_info` now go through `transformFigmaNode` (in `transformers/node-transformer.ts`) instead of the local `filterFigmaNode`, which gives consistent filtering and effects support.
 
 ### WebSocket server (`src/socket.ts`) — works out of the box
@@ -43,6 +46,8 @@ The features below depend on changes inside the plugin's `code.js`. They will **
   - `effectStyleId`
 
   Applied automatically to `get_node_info`, `get_nodes_info` and `read_my_design`.
+- **`childCount` on page children in `get_document_info`**, so a section or frame with content no longer looks empty; with `transform` it becomes `_truncated` + `_childrenCount`.
+- **`get_instance_overrides` returns `overrides`** — `{id, overriddenFields}` for each overridden layer.
 - **`get_node_info_raw` command.** Returns the unfiltered `JSON_REST_V1` `response.document` from the Plugin API — the same shape Figma's REST API would return. Includes fields the standard pipeline drops:
   - `layoutMode`, all padding fields, `itemSpacing`
   - `primaryAxisAlignItems` / `counterAxisAlignItems`, sizing modes
@@ -249,13 +254,18 @@ The MCP server provides the following tools for interacting with Figma. Tools ma
 
 ### Transform options (fork)
 
-All read tools accept an optional `transform` parameter with:
+Read tools that return node trees (`get_document_info`, `get_node_info`, `get_node_info_raw`, `get_nodes_info`, `read_my_design`) accept an optional `transform` parameter with:
 
-- `maxDepth`, `maxChildren` — limit tree traversal
+- `maxDepth`, `maxChildren` — limit tree traversal; nodes at `maxDepth` keep their properties and get `_truncated` + `_childrenCount` instead of children
 - `typeFilter`, `propertyFilter` — filter nodes / properties
 - `simplifyStyles` — simplify fills / strokes / effects
 - `pagination` — paginate children
-- `savePath` — save the response to a JSON file
+
+List tools (`get_selection`, `get_styles`, `get_local_components`, `scan_text_nodes`, `scan_nodes_by_types`, `get_annotations`, `get_reactions`) accept `transform.pagination` (`{page, pageSize}`, `pageSize` ≤ 100). It pages through their top-level lists — `components`, `colors`/`texts`/`effects`/`grids`, `textNodes`, … — and adds `_pagination: {page, pageSize, totals, totalPages}`.
+
+All read tools also accept:
+
+- `savePath` — write the JSON response to a file and return only a summary (`savedTo`, `chars`, top-level `shape`) instead of the data
 - `noCache` — skip the cache and force a fresh read
 
 ### MCP Prompts

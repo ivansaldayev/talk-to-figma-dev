@@ -41,6 +41,7 @@ interface getInstanceOverridesResult {
   sourceInstanceId: string;
   mainComponentId: string;
   overridesCount: number;
+  overrides?: { id: string; overriddenFields: string[] }[];
 }
 
 interface setInstanceOverridesResult {
@@ -1358,7 +1359,7 @@ server.tool(
           {
             type: "text",
             text: typedResult.success
-              ? `Successfully got instance overrides: ${typedResult.message}`
+              ? JSON.stringify(typedResult)
               : `Failed to get instance overrides: ${typedResult.message}`
           }
         ]
@@ -2444,13 +2445,24 @@ server.tool(
 // A tool to get Figma Prototyping Reactions from multiple nodes
 server.tool(
   "get_reactions",
-  "Get Figma Prototyping Reactions from multiple nodes. CRITICAL: The output MUST be processed using the 'reaction_to_connector_strategy' prompt IMMEDIATELY to generate parameters for connector lines via the 'create_connections' tool.",
+  "Get Figma Prototyping Reactions from multiple nodes. To draw the found flows as connector lines, process the output with the 'reaction_to_connector_strategy' prompt and pass the result to the 'create_connections' tool.",
   {
     nodeIds: z.array(z.string()).describe("Array of node IDs to get reactions from"),
   },
   async ({ nodeIds }: any) => {
     try {
       const result = await sendCommandToFigma("get_reactions", { nodeIds });
+      // Suggest connectors only when there is something to draw
+      if (!((result as any)?.nodesWithReactions > 0)) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result)
+            }
+          ]
+        };
+      }
       return {
         content: [
           {
@@ -2459,7 +2471,7 @@ server.tool(
           },
           {
             type: "text",
-            text: "IMPORTANT: You MUST now use the reaction data above and follow the `reaction_to_connector_strategy` prompt to prepare the parameters for the `create_connections` tool call. This is a required next step."
+            text: "To draw these flows as connector lines, follow the `reaction_to_connector_strategy` prompt to prepare the parameters for the `create_connections` tool."
           }
         ],
         followUp: {
