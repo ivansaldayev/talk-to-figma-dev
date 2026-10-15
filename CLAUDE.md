@@ -2,7 +2,7 @@
 
 ## Repository
 
-This is a personal fork of [`sonnylazuardi/cursor-talk-to-figma-mcp`](https://github.com/sonnylazuardi/cursor-talk-to-figma-mcp), hosted at [`ivan01march/talk-to-figma-dev`](https://github.com/ivan01march/talk-to-figma-dev). Local customizations live as regular commits on this fork.
+This is a personal fork of [`sonnylazuardi/cursor-talk-to-figma-mcp`](https://github.com/sonnylazuardi/cursor-talk-to-figma-mcp), hosted at [`ivansaldayev/talk-to-figma-dev`](https://github.com/ivansaldayev/talk-to-figma-dev). Local customizations live as regular commits on this fork.
 
 ## Workflow for Upstream Updates
 
