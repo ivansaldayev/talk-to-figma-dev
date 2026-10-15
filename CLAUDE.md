@@ -45,6 +45,10 @@ Resolve any merge conflicts manually.
 - New `case "get_node_info_raw"` added to the `handleCommand` switch (4 added lines, no original cases modified)
 - **Requires Figma Desktop** to pick up local changes (published plugin ignores local files)
 
+### MCP Config and Build
+- `.mcp.json` runs the local server from source (`bun ${CLAUDE_PROJECT_DIR:-.}/src/talk_to_figma_mcp/server.ts`), not the upstream `cursor-talk-to-figma-mcp` npm package
+- `scripts/setup.sh` writes `.cursor/mcp.json` with an absolute path to this checkout and no longer overwrites `.mcp.json`
+
 ### Transform System (new files)
 - `transformers/node-transformer.ts` — filters/limits Figma responses, includes effects support
 - `types/transform-options.ts` — TypeScript interfaces

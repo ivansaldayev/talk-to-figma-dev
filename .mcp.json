@@ -1,9 +1,9 @@
 {
   "mcpServers": {
     "TalkToFigma": {
-      "command": "bunx",
+      "command": "bun",
       "args": [
-        "cursor-talk-to-figma-mcp@latest"
+        "${CLAUDE_PROJECT_DIR:-.}/src/talk_to_figma_mcp/server.ts"
       ]
     }
   }
