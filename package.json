@@ -1,11 +1,16 @@
 {
-  "name": "cursor-talk-to-figma-mcp",
-  "description": "Cursor Talk to Figma MCP",
-  "version": "0.3.5",
+  "name": "talk-to-figma-dev",
+  "description": "Talk to Figma MCP server (fork of cursor-talk-to-figma-mcp) with node-tree transforms, raw node info and Claude Code setup",
+  "version": "0.4.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ivansaldayev/talk-to-figma-dev.git"
+  },
   "module": "dist/server.js",
   "main": "dist/server.js",
   "bin": {
-    "cursor-talk-to-figma-mcp": "dist/server.js"
+    "talk-to-figma-dev": "dist/server.js"
   },
   "files": [
     "dist",
