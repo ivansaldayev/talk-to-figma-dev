@@ -31,6 +31,7 @@ Resolve any merge conflicts manually.
 
 ### MCP Server (`src/talk_to_figma_mcp/server.ts`)
 - `list_channels` tool — get active channels list
+- `set_current_page` tool — switch page by ID; `get_document_info` description lists `pages`/`isCurrent`
 - `export_node_as_image` — added `savePath` param to save to disk
 - Tool proxy — auto-adds `transform` param to read tools
 - `get_instance_overrides` — returns the plugin result as JSON (IDs, count, `overrides`) instead of only its message
@@ -45,7 +46,8 @@ Resolve any merge conflicts manually.
   - `getNodeInfoRaw` — returns the unfiltered `JSON_REST_V1` `response.document` from Plugin API. Includes fields the standard pipeline strips: `layoutMode`, padding\*, `itemSpacing`, `primaryAxisAlignItems`/`counterAxisAlignItems`, sizing modes, `visible`, `componentId` (on INSTANCE), `imageRef` in fills, VECTOR nodes
 - `getNodeInfo`, `getNodesInfo`, `readMyDesign` — each calls `supplementNodeProperties(result, node)` after `filterFigmaNode`
 - New `case "get_node_info_raw"` added to the `handleCommand` switch (4 added lines, no original cases modified)
-- `getDocumentInfo` — page children carry `childCount` (inline `// LOCAL:` line)
+- `getDocumentInfo` — returns all pages (`pages` with `isCurrent`) and `currentPage`; page children carry `childCount` (inline `// LOCAL:` line)
+- `setCurrentPage` + `case "set_current_page"` — switch the current page by ID
 - `getInstanceOverrides` — result includes `overrides` (`{id, overriddenFields}`; inline `// LOCAL:` lines)
 - **Requires Figma Desktop** to pick up local changes (published plugin ignores local files)
 

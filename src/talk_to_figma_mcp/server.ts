@@ -97,7 +97,7 @@ const WS_URL = serverUrl === 'localhost' ? `ws://${serverUrl}` : `wss://${server
 // Document Info Tool
 server.tool(
   "get_document_info",
-  "Get detailed information about the current Figma document",
+  "Get the current page with its top-level nodes (each with childCount), plus currentPage and all pages of the document in pages (id, name, isCurrent). Switch pages with set_current_page.",
   {},
   async () => {
     try {

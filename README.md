@@ -179,7 +179,8 @@ The MCP server provides the following tools for interacting with Figma. Tools ma
 
 ### Document & Selection
 
-- `get_document_info` — get information about the current Figma document
+- `get_document_info` — get the current page with its top-level nodes, plus `currentPage` and **all pages** of the file in `pages` (each with `id`, `name` and an `isCurrent` flag). **(fork, plugin)** returns every page and gives top-level nodes a `childCount`
+- `set_current_page` — **(fork, plugin)** switch to another page by ID (take it from `pages` in `get_document_info`); resets the cached `get_document_info`
 - `get_selection` — get information about the current selection
 - `read_my_design` — get detailed node information about the current selection without parameters (**fork, plugin**: returns supplemented properties)
 - `get_node_info` — get detailed information about a specific node (**fork, plugin**: returns supplemented properties)
