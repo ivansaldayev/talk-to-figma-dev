@@ -49,6 +49,7 @@ Resolve any merge conflicts manually.
 - `getDocumentInfo` — returns all pages (`pages` with `isCurrent`) and `currentPage`; page children carry `childCount` (inline `// LOCAL:` line)
 - `setCurrentPage` + `case "set_current_page"` — switch the current page by ID
 - `getInstanceOverrides` — result includes `overrides` (`{id, overriddenFields}`; inline `// LOCAL:` lines)
+- `ui.html` — the disconnected hint says `bun socket` (the fork's relay) and the MCP config block shows `bun /path-to-repo/dist/server.js` instead of upstream's `bunx cursor-talk-to-figma-socket` / `bunx cursor-talk-to-figma-mcp@latest`
 - **Requires Figma Desktop** to pick up local changes (published plugin ignores local files)
 
 ### MCP Config and Build

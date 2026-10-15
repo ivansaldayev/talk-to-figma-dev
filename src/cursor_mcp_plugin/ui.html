@@ -295,8 +295,9 @@
         <div id="mcp-config" class="section hidden">
           <h2>MCP Configuration</h2>
           <p>
-            Copy this configuration to your <code>mcp.json</code> file in
-            Cursor:
+            Claude Code picks up the server from the repo's
+            <code>.mcp.json</code>. For Cursor, run <code>bun setup</code> or
+            copy this config and replace <code>/path-to-repo</code>:
           </p>
           <textarea
             id="mcp-json"
@@ -491,7 +492,7 @@
 
         // Add instructions for localhost when disconnected
         if (!isConnected) {
-          statusMessage += `<br><br>Run this in your terminal, then connect<br><code>bunx cursor-talk-to-figma-socket</code>`;
+          statusMessage += `<br><br>Start the relay in the repo folder, then connect<br><code>bun socket</code>`;
         }
 
         connectionStatus.innerHTML = statusMessage;
@@ -920,11 +921,12 @@
 
       // Add this function to the script section
       function updateMcpConfig() {
+        // The fork's server runs from a local checkout, whose path the plugin can't know
         const mcpConfig = {
           mcpServers: {
             TalkToFigma: {
-              command: "bunx",
-              args: ["cursor-talk-to-figma-mcp@latest"],
+              command: "bun",
+              args: ["/path-to-repo/dist/server.js"],
             },
           },
         };
