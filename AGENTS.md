@@ -17,8 +17,8 @@ bun install              # Install dependencies
 bun run build            # Build MCP server (tsup → dist/)
 bun run dev              # Build in watch mode
 bun socket               # Start WebSocket relay server (port 3055)
-bun run start            # Run MCP server from source (dist/ is not committed)
-bun setup                # Full setup (install + write .cursor/mcp.json for Cursor)
+bun run start            # Run built MCP server (dist/server.js)
+bun setup                # Full setup (install + build + write .cursor/mcp.json for Cursor)
 ```
 
 There is no test suite or linter configured.
@@ -45,19 +45,19 @@ Runs inside Figma. `code.js` is the plugin main thread handling 30+ commands via
 
 ## Setup
 
-1. Run `bun setup` — installs dependencies and writes `.cursor/mcp.json` for Cursor. Claude Code uses the committed `.mcp.json`
+1. Run `bun setup` — installs dependencies, builds `dist/` and writes `.cursor/mcp.json` for Cursor. Claude Code uses the committed `.mcp.json`
 2. `bun socket` in one terminal (WebSocket relay on port 3055)
 3. In Figma: Plugins → Development → Link existing plugin → select `src/cursor_mcp_plugin/manifest.json`
 4. Run plugin in Figma, join a channel, then use tools from Cursor or Claude Code
 
-Both configs run this fork's MCP server from source with Bun (no build step), not the upstream `cursor-talk-to-figma-mcp` npm package. The committed `.mcp.json` for Claude Code:
+Both configs run this fork's compiled MCP server (`dist/server.js`), not the upstream `cursor-talk-to-figma-mcp` npm package. `dist/` is not committed — rebuild with `bun run build` after changing `src/talk_to_figma_mcp/`. The committed `.mcp.json` for Claude Code:
 
 ```json
 {
   "mcpServers": {
     "TalkToFigma": {
       "command": "bun",
-      "args": ["${CLAUDE_PROJECT_DIR:-.}/src/talk_to_figma_mcp/server.ts"]
+      "args": ["${CLAUDE_PROJECT_DIR:-.}/dist/server.js"]
     }
   }
 }
@@ -66,7 +66,7 @@ Both configs run this fork's MCP server from source with Bun (no build step), no
 To use the server outside this repo, add it at user scope with an absolute path:
 
 ```bash
-claude mcp add --scope user TalkToFigma -- bun /path-to-repo/src/talk_to_figma_mcp/server.ts
+claude mcp add --scope user TalkToFigma -- bun /path-to-repo/dist/server.js
 ```
 
 ## Agent Notes

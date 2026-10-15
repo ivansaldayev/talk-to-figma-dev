@@ -68,13 +68,13 @@ The features below depend on changes inside the plugin's `code.js`. They will **
    curl -fsSL https://bun.sh/install | bash
    ```
 
-2. Run setup (installs dependencies and writes `.cursor/mcp.json` for Cursor):
+2. Run setup (installs dependencies, builds the MCP server to `dist/` and writes `.cursor/mcp.json` for Cursor):
 
    ```bash
    bun setup
    ```
 
-   Claude Code needs no extra step: the committed [`.mcp.json`](.mcp.json) registers this fork's server. Approve the `TalkToFigma` server when Claude Code asks on first launch in the repo.
+   Claude Code needs no extra step: the committed [`.mcp.json`](.mcp.json) registers this fork's compiled server. Approve the `TalkToFigma` server when Claude Code asks on first launch in the repo.
 
 3. Start the WebSocket server:
 
@@ -88,14 +88,14 @@ The features below depend on changes inside the plugin's `code.js`. They will **
 
 ### MCP Server: Integration with Claude Code
 
-The repo ships a project-scoped [`.mcp.json`](.mcp.json) that runs the fork's server from source with Bun, so no build step is needed and MCP-side changes apply on the next session:
+The repo ships a project-scoped [`.mcp.json`](.mcp.json) that runs the fork's compiled server from `dist/server.js`. `dist/` is not committed: build it with `bun setup` or `bun run build`, and rebuild after pulling or changing `src/talk_to_figma_mcp/`:
 
 ```json
 {
   "mcpServers": {
     "TalkToFigma": {
       "command": "bun",
-      "args": ["${CLAUDE_PROJECT_DIR:-.}/src/talk_to_figma_mcp/server.ts"]
+      "args": ["${CLAUDE_PROJECT_DIR:-.}/dist/server.js"]
     }
   }
 }
@@ -104,7 +104,7 @@ The repo ships a project-scoped [`.mcp.json`](.mcp.json) that runs the fork's se
 Launch `claude` from the repo root and approve the server when prompted, then check it with `claude mcp get TalkToFigma`. To use the server from other projects, register it at user scope with an absolute path:
 
 ```bash
-claude mcp add --scope user TalkToFigma -- bun /path-to-repo/src/talk_to_figma_mcp/server.ts
+claude mcp add --scope user TalkToFigma -- bun /path-to-repo/dist/server.js
 ```
 
 ### MCP Server: Integration with Cursor
@@ -116,7 +116,7 @@ For a local checkout of this fork, point Cursor at the local server (recommended
   "mcpServers": {
     "TalkToFigma": {
       "command": "bun",
-      "args": ["/path-to-repo/src/talk_to_figma_mcp/server.ts"]
+      "args": ["/path-to-repo/dist/server.js"]
     }
   }
 }

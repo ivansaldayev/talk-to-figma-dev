@@ -3,7 +3,7 @@
     "TalkToFigma": {
       "command": "bun",
       "args": [
-        "${CLAUDE_PROJECT_DIR:-.}/src/talk_to_figma_mcp/server.ts"
+        "${CLAUDE_PROJECT_DIR:-.}/dist/server.js"
       ]
     }
   }

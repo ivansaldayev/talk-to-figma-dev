@@ -46,9 +46,9 @@ Resolve any merge conflicts manually.
 - **Requires Figma Desktop** to pick up local changes (published plugin ignores local files)
 
 ### MCP Config and Build
-- `.mcp.json` runs the local server from source (`bun ${CLAUDE_PROJECT_DIR:-.}/src/talk_to_figma_mcp/server.ts`), not the upstream `cursor-talk-to-figma-mcp` npm package
-- `scripts/setup.sh` writes `.cursor/mcp.json` with an absolute path to this checkout and no longer overwrites `.mcp.json`
-- `dist/` is not committed; `bun run start` runs from source, `bun run build` regenerates `dist/` for packaging
+- `.mcp.json` runs the fork's compiled server (`bun ${CLAUDE_PROJECT_DIR:-.}/dist/server.js`), not the upstream `cursor-talk-to-figma-mcp` npm package
+- `scripts/setup.sh` runs `bun install` + `bun run build`, then writes `.cursor/mcp.json` with an absolute path to this checkout's `dist/server.js`; it no longer overwrites `.mcp.json`
+- `dist/` is not committed; `bun run start` runs `dist/server.js`. After changing `src/talk_to_figma_mcp/`, run `bun run build` — MCP clients pick up changes only from the build
 
 ### Transform System (new files)
 - `transformers/node-transformer.ts` — filters/limits Figma responses, includes effects support
