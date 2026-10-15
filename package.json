@@ -13,7 +13,7 @@
   ],
   "type": "module",
   "scripts": {
-    "start": "bun run dist/server.js",
+    "start": "bun run src/talk_to_figma_mcp/server.ts",
     "socket": "bun run src/socket.ts",
     "setup": "./scripts/setup.sh",
     "build": "tsup",

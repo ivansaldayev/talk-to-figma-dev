@@ -17,7 +17,7 @@ bun install              # Install dependencies
 bun run build            # Build MCP server (tsup → dist/)
 bun run dev              # Build in watch mode
 bun socket               # Start WebSocket relay server (port 3055)
-bun run start            # Run built MCP server
+bun run start            # Run MCP server from source (dist/ is not committed)
 bun setup                # Full setup (install + write .cursor/mcp.json for Cursor)
 ```
 

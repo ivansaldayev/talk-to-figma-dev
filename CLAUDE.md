@@ -48,6 +48,7 @@ Resolve any merge conflicts manually.
 ### MCP Config and Build
 - `.mcp.json` runs the local server from source (`bun ${CLAUDE_PROJECT_DIR:-.}/src/talk_to_figma_mcp/server.ts`), not the upstream `cursor-talk-to-figma-mcp` npm package
 - `scripts/setup.sh` writes `.cursor/mcp.json` with an absolute path to this checkout and no longer overwrites `.mcp.json`
+- `dist/` is not committed; `bun run start` runs from source, `bun run build` regenerates `dist/` for packaging
 
 ### Transform System (new files)
 - `transformers/node-transformer.ts` — filters/limits Figma responses, includes effects support
